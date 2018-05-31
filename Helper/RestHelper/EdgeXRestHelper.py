@@ -19,7 +19,7 @@ class VideoFovRestHelper:
 
         # print(count)
 
-        url_events = self.API_HOST + 'event/device/congo_2048/'+count
+        url_events = self.API_HOST + 'event/device/'+video_name+'/'+count
         resp = requests.get(url=url_events, headers=self.API_HEADERS)
 
         # print(resp.text)
