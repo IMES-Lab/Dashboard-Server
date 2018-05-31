@@ -97,3 +97,32 @@ class DeviceInfo:
             "service": self.service,
             "profile": self.profile
         }
+
+
+class ValueDescriptor(object):
+    def __init__(self, name, description,
+                 min_val, max_val, type,
+                 uomLabel, defaultValue, formatting,
+                 labels):
+        self.name = name
+        self.description = description
+        self.min_val = min_val
+        self.max_val = max_val
+        self.labels = labels
+        self.type = type
+        self.uomLabel = uomLabel
+        self.defaultValue = defaultValue
+        self.formatting = formatting
+
+    def getData(self):
+        return {
+            'name': self.name,
+            'description': self.description,
+            'min': self.min_val,
+            'max': self.max_val,
+            "labels": self.labels,
+            "type": self.type,
+            "uomLabel": self.uomLabel,
+            "defaultValue": self.defaultValue,
+            "formatting": self.formatting
+        }

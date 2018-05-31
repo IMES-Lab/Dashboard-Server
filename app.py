@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 from Helper.DataHelper import EdgeXInitHelper
+from Helper.RestHelper.EdgeXRestHelper import VideoFovRestHelper
 
 app = Flask(__name__)
 app.debug = True
@@ -15,6 +16,7 @@ app.debug = True
 
 @app.route('/')
 def index():
+    # mappingFovToTile(3, 3, 95, -100)
     videos = ['congo_2048', 'paris-by-diego']
     videos_types = ['3x4', '3x4']
     videos_models = ['OVER_UNDER', 'EQUALRECT']
@@ -28,21 +30,51 @@ def index():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
-    selected_video = request.form.get('selected_video')
+    selected_video_name = request.form.get('selected_video')
     rng = pd.date_range('9/1/1995', periods=7500, freq='H')
     ts = pd.Series(np.random.randn(len(rng)), index=rng)
+
+    fovRestHelper = VideoFovRestHelper(API_HOST='http://localhost:48080/api/v1/')
+    event_list = fovRestHelper.get_events(video_name=selected_video_name)
+
+    tile_row = 3
+    tile_col = 3
+
+    video_timeSlice = list(range(0, 15000, 500))
+    video_tile = list()
+
+    for idx in range(0, len(video_timeSlice)):
+        video_tile.append(0)
+
+    for each_event in event_list:
+        each_ts = each_event['timestamp']
+        each_yaw = each_event['yaw']
+        each_pitch = each_event['pitch']
+
+        tile_num = mappingFovToTile(tile_rows=tile_row, tile_cols=tile_col, yaw=each_yaw, pitch=each_pitch)
+
+        idx = int(video_timeSlice.index(int(each_ts)))
+        if video_tile[idx] is 0:
+            video_tile[idx] = tile_num
+        else:
+            video_tile[idx] = round(video_tile[idx] + tile_num) / 2
+        print(video_tile[idx])
+
+    # for each_tile in video_tile:
+    #     print(each_tile)
 
     graphs = [
         dict(
             data=[
                 dict(
-                    x=[1, 2, 3, 4],
-                    y=[10, 20, 30, 40],
+                    x=video_timeSlice,  # timestamp
+                    y=video_tile,  # tile number
                     type='bar'
                 ),
             ],
             layout=dict(
-                title=str(selected_video)
+                title=str(selected_video_name),
+                plot_bgcolor='#F5F7FA'
             )
         ),
 
@@ -82,10 +114,44 @@ def dashboard():
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
 
     return render_template('layouts/dashboard.html',
-                           video_name=selected_video,
+                           video_name=selected_video_name,
                            ids=ids,
                            graphJSON=graphJSON)
 
+def mappingFovToTile(tile_rows, tile_cols, yaw, pitch):
+    fov_range_tile_rows = list()
+    fov_range_tile_cols = list()
+    range_start = -180
+    range_step_row = int(360 / tile_rows)
+    range_step_cols = int(360 / tile_cols)
+
+    for idx in range(0, tile_rows):
+        fov_range_tile_rows.append(list(range(range_start, range_start+range_step_row)))
+        range_start += range_step_row
+
+    for item in fov_range_tile_rows:
+        if int(str(yaw).split('.')[0]) in item:
+            tile_num_row = int(fov_range_tile_rows.index(item))+1
+
+    range_start = 180
+    for idx in range(0, tile_cols):
+        fov_range_tile_cols.append(list(range(range_start, range_start-range_step_cols, -1)))
+        range_start -= range_step_cols
+
+    for item in fov_range_tile_cols:
+        if int(str(pitch).split('.')[0]) in item:
+            tile_num_col = int(fov_range_tile_cols.index(item))+1
+
+    # tile_num_row = 4
+    # tile_num_col = 2
+    print(tile_num_row)
+    print(tile_num_col)
+    tile_num = tile_rows*(tile_num_col-1) + tile_num_row
+    print(tile_num)
+    return tile_num
+
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9999)
+    app.run(host='0.0.0.0', port=9999, debug=True)
+
