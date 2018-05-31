@@ -7,9 +7,7 @@ import plotly
 import pandas as pd
 import numpy as np
 
-from Helper import RestHelper as EdgeXRestHelper
 from Helper.DataHelper import EdgeXInitHelper
-import Helper.RestHelper.item.EdgeXRestItem as EdgeXRestItem
 
 app = Flask(__name__)
 app.debug = True
