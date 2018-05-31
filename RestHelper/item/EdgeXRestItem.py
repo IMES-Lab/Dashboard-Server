@@ -47,3 +47,53 @@ class DeviceService:
             "labels": self.labels,
             "addressable": self.addressable
         }
+
+
+class DeviceProfile:
+    def __init__(self, origin, name, description, manufacturer, model, labels, commands):
+        self.origin = origin
+        self.name = name
+        self.description = description
+        self.manufacturer = manufacturer
+        self.model = model
+        self.labels = labels
+        self.commands = commands
+
+    def getData(self):
+        return {
+            'origin': self.origin,
+            'name': self.name,
+            'description': self.description,
+            'manufacturer': self.manufacturer,
+            'model': self.model,
+            "labels": self.labels,
+            "commands": self.commands
+        }
+
+
+class DeviceInfo:
+    def __init__(self, origin, name, description,
+                 adminState, operatingState, labels,
+                 addressable, service, profile):
+        self.origin = origin
+        self.name = name
+        self.description = description
+        self.adminState = adminState
+        self.operatingState = operatingState
+        self.labels = labels
+        self.addressable = addressable
+        self.service = service
+        self.profile = profile
+
+    def getData(self):
+        return {
+            'origin': self.origin,
+            'name': self.name,
+            'description': self.description,
+            'adminState': self.adminState,
+            'operatingState': self.operatingState,
+            "labels": self.labels,
+            "addressable": self.addressable,
+            "service": self.service,
+            "profile": self.profile
+        }
