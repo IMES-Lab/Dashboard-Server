@@ -15,8 +15,8 @@
     <form class="form-inline" method="POST" action="{{ url_for('dashboard') }}">
       <div class="form-group">
         <div class="input-group">
-            <span class="input-group-addon">Please select</span>
-                <select name="video_select" class="selectpicker form-control">
+            <span class="input-group-addon">Please select the video</span>
+                <select name="selected_video" class="selectpicker form-control">
                 <script type="text/javascript">
                     var videos = {{videos | safe}};
                     for(var idx in videos) {
