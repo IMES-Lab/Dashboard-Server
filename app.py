@@ -1,11 +1,9 @@
 # https://plot.ly/python/bar-charts/
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 
+import os
 import json
 import plotly
-
-import pandas as pd
-import numpy as np
 
 from Helper.DataHelper import EdgeXInitHelper
 from Helper.RestHelper.EdgeXRestHelper import VideoFovRestHelper
@@ -13,26 +11,35 @@ from Helper.RestHelper.EdgeXRestHelper import VideoFovRestHelper
 app = Flask(__name__)
 app.debug = True
 
+def load_videoList():
+    with open('Contents/contents.json') as f:
+        data = json.load(f)
+
+    list_videos = data["video_names"]
+
+    return jsonify(list_videos=list_videos)
+
+@app.route('/video/list', methods=['GET'])
+def get_videoList():
+    return load_videoList()
 
 @app.route('/')
 def index():
     # mappingFovToTile(3, 3, 95, -100)
-    videos = ['congo_2048', 'paris-by-diego']
+    videos_list = load_videoList()
     videos_types = ['3x4', '3x4']
     videos_models = ['OVER_UNDER', 'EQUALRECT']
 
-    EdgeXInitHelper.initEdgeXWithVideoInformations(videos=videos, videos_types=videos_types, videos_models=videos_models,
+    EdgeXInitHelper.initEdgeXWithVideoInformations(videos=videos_list, videos_types=videos_types, videos_models=videos_models,
                                                    edgex_host='http://localhost:48081/api/v1/')
 
     return render_template('layouts/index.html',
-                           videos=videos)
+                           videos=videos_list)
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     selected_video_name = request.form.get('selected_video')
-    rng = pd.date_range('9/1/1995', periods=7500, freq='H')
-    ts = pd.Series(np.random.randn(len(rng)), index=rng)
 
     fovRestHelper = VideoFovRestHelper(API_HOST='http://localhost:48080/api/v1/')
     event_list = fovRestHelper.get_events(video_name=selected_video_name)
