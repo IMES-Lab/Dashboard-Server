@@ -1,0 +1,13 @@
+{
+  "video_names" : ["congo_2048", "paris-by-diego"],
+  "video_info" : {
+    "congo_2048" : {
+      "video_file" : "Video/congo_2048.mp4",
+      "video_type" : "TYPE_STEREO_OVER_UNDER"
+    },
+    "paris-by-diego" : {
+      "video_file" : "Video/paris-by-diego.mp4",
+      "video_type" : "TYPE_MONO"
+    }
+  }
+}
