@@ -3,6 +3,7 @@ from flask import Flask, render_template, request
 
 import json
 import plotly
+import plotly.graph_objs as go
 
 import pandas as pd
 import numpy as np
@@ -42,9 +43,11 @@ def dashboard():
 
     video_timeSlice = list(range(0, 15000, 500))
     video_tile = list()
+    video_tile_boxplot = list()
 
     for idx in range(0, len(video_timeSlice)):
         video_tile.append(0)
+        video_tile_boxplot.append(list())
 
     for each_event in event_list:
         each_ts = each_event['timestamp']
@@ -54,11 +57,22 @@ def dashboard():
         tile_num = mappingFovToTile(tile_rows=tile_row, tile_cols=tile_col, yaw=each_yaw, pitch=each_pitch)
 
         idx = int(video_timeSlice.index(int(each_ts)))
+        print(tile_num)
         if video_tile[idx] is 0:
             video_tile[idx] = tile_num
         else:
             video_tile[idx] = round(video_tile[idx] + tile_num) / 2
-        print(video_tile[idx])
+
+        video_tile_boxplot[idx].append(tile_num)
+
+    traces = []
+
+    for xd, yd in zip(video_timeSlice, video_tile_boxplot):
+        traces.append(go.Box(
+            x=xd,
+            y=yd,
+            name=str(xd)
+        ))
 
     # for each_tile in video_tile:
     #     print(each_tile)
@@ -73,40 +87,23 @@ def dashboard():
                 ),
             ],
             layout=dict(
-                title=str(selected_video_name),
+                title="Average tile numbers of "+str(selected_video_name),
                 plot_bgcolor='#F5F7FA'
             )
         ),
 
         dict(
-            data=[
-                dict(
-                    x=['totoro', 'gaonasi', 'ponyo', 'yoobaba'],
-                    y=[70, 10, 40, 0],
-                    type='scatter'
-                ),
-            ],
+            data=traces,
             layout=dict(
-                title='second graph'
+                title="Boxplot graph for " + str(selected_video_name),
+                plot_bgcolor='#F5F7FA'
             )
         ),
-
-        dict(
-            data=[
-                dict(
-                    x=ts.index,  # Can use the pandas data structures directly
-                    y=ts
-                )
-            ],
-            layout=dict(
-                title='third graph'
-            )
-        )
     ]
 
     # Add "ids" to each of the graphs to pass up to the client
     # for templating
-    ids = ['graph-{}'.format(i) for i, _ in enumerate(graphs)]
+    ids = ['Bar graph', 'Boxplot graph']
 
     # Convert the figures to JSON
     # PlotlyJSONEncoder appropriately converts pandas, datetime, etc
@@ -144,10 +141,10 @@ def mappingFovToTile(tile_rows, tile_cols, yaw, pitch):
 
     # tile_num_row = 4
     # tile_num_col = 2
-    print(tile_num_row)
-    print(tile_num_col)
+    # print(tile_num_row)
+    # print(tile_num_col)
     tile_num = tile_rows*(tile_num_col-1) + tile_num_row
-    print(tile_num)
+    # print(tile_num)
     return tile_num
 
 
